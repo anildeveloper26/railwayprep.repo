@@ -14,18 +14,19 @@ const REFRESH_COOKIE_OPTIONS = {
 };
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { name, email, password, category, targetExam } = req.body;
+  const { name, email, password, category, targetExam, deviceId } = req.body;
 
   const exists = await User.findOne({ email });
   if (exists) throw new AppError("Email already registered", 409);
 
   const user = await User.create({ name, email, password, category, targetExam });
 
-  const payload = { userId: String(user._id), role: user.role };
+  const payload = { userId: String(user._id), role: user.role, deviceId };
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
 
   user.refreshToken = refreshToken;
+  if (deviceId) user.deviceId = deviceId;
   await user.save({ validateBeforeSave: false });
 
   res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
@@ -34,19 +35,20 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, deviceId } = req.body;
 
-  const user = await User.findOne({ email, isActive: true }).select("+password +refreshToken");
+  const user = await User.findOne({ email, isActive: true }).select("+password +refreshToken +deviceId");
   if (!user) throw new AppError("Invalid email or password", 401);
 
   const valid = await user.comparePassword(password);
   if (!valid) throw new AppError("Invalid email or password", 401);
 
-  const payload = { userId: String(user._id), role: user.role };
+  const payload = { userId: String(user._id), role: user.role, deviceId };
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
 
   user.refreshToken = refreshToken;
+  if (deviceId) user.deviceId = deviceId; // lock session to this device
   await user.save({ validateBeforeSave: false });
 
   res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
@@ -66,10 +68,10 @@ export const refreshTokens = asyncHandler(async (req: Request, res: Response) =>
     throw new AppError("Invalid or expired refresh token", 401);
   }
 
-  const user = await User.findById(payload.userId).select("+refreshToken");
+  const user = await User.findById(payload.userId).select("+refreshToken +deviceId");
   if (!user || user.refreshToken !== token) throw new AppError("Session expired, please login again", 401);
 
-  const newPayload = { userId: String(user._id), role: user.role };
+  const newPayload = { userId: String(user._id), role: user.role, deviceId: user.deviceId };
   const accessToken = signAccessToken(newPayload);
   const refreshToken = signRefreshToken(newPayload);
 

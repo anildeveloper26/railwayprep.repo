@@ -22,6 +22,6 @@ export async function connectDB(): Promise<void> {
     });
   } catch (err) {
     logger.error(`MongoDB connection failed: ${(err as Error).message}`);
-    process.exit(1);
+    throw err;
   }
 }

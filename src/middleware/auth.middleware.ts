@@ -20,7 +20,17 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
   const token = authHeader.split(" ")[1];
 
   try {
-    req.user = verifyAccessToken(token);
+    const payload = verifyAccessToken(token);
+
+    // Device lock: if a deviceId is bound to this session, the request must come from that device
+    if (payload.deviceId) {
+      const requestDeviceId = req.headers["x-device-id"] as string | undefined;
+      if (!requestDeviceId || requestDeviceId !== payload.deviceId) {
+        return next(new AppError("Access restricted to the device where you logged in", 403));
+      }
+    }
+
+    req.user = payload;
     next();
   } catch {
     next(new AppError("Invalid or expired token", 401));

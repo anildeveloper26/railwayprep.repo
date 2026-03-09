@@ -20,6 +20,7 @@ export interface IUser extends Document {
   averageScore: number;
   totalPoints: number;
   refreshToken?: string;
+  deviceId?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -75,6 +76,7 @@ const userSchema = new Schema<IUser>(
     averageScore: { type: Number, default: 0 },
     totalPoints: { type: Number, default: 0 },
     refreshToken: { type: String, select: false },
+    deviceId: { type: String, select: false },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

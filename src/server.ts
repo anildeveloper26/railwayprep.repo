@@ -4,11 +4,13 @@ import { logger } from "./utils/logger";
 import app from "./app";
 
 async function bootstrap() {
-  await connectDB();
-
   const server = app.listen(env.PORT, () => {
     logger.info(`Server running on port ${env.PORT} [${env.NODE_ENV}]`);
     logger.info(`API: http://localhost:${env.PORT}/api/v1`);
+  });
+
+  await connectDB().catch((err) => {
+    logger.error("Could not connect to MongoDB, server will continue without DB:", err.message);
   });
 
   // Graceful shutdown

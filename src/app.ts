@@ -22,16 +22,18 @@ import adminRoutes        from "./routes/admin.routes";
 
 const app = express();
 
+// ─── CORS (must be before helmet and all routes) ────────────────────────────
+const corsOptions = {
+  origin: env.CLIENT_ORIGIN,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Device-ID"],
+};
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // explicit preflight for all routes
+
 // ─── Security ───────────────────────────────────────────────────────────────
-app.use(helmet());
-app.use(
-  cors({
-    origin: env.CLIENT_ORIGIN,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 const globalLimiter = rateLimit({
