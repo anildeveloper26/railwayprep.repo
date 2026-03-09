@@ -23,8 +23,20 @@ import adminRoutes        from "./routes/admin.routes";
 const app = express();
 
 // ─── CORS (must be before helmet and all routes) ────────────────────────────
-const corsOptions = {
-  origin: env.CLIENT_ORIGIN,
+const allowedOrigins = env.CLIENT_ORIGIN
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (Postman, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    // Allow wildcard
+    if (allowedOrigins.includes("*")) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Device-ID"],
