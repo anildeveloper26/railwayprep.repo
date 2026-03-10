@@ -127,5 +127,20 @@ export function applyCors(req: Request, res: Response, next: NextFunction): void
 /**
  * Explicit OPTIONS handler — must be registered BEFORE route definitions.
  * Responds 204 No Content to all preflight requests.
+ * Uses the same error-catching wrapper so rejected origins never reach the
+ * global error handler.
  */
-export const handlePreflight = cors(corsOptions);
+export function handlePreflight(req: Request, res: Response, next: NextFunction): void {
+  corsMiddleware(req, res, (err) => {
+    if (err) {
+      const status = err instanceof CorsError ? 403 : 500;
+      res.status(status).json({
+        success: false,
+        code: err instanceof CorsError ? err.code : "CORS_ERROR",
+        message: err.message,
+      });
+      return;
+    }
+    next();
+  });
+}
