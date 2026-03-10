@@ -1,10 +1,10 @@
 import express from "express";
 import helmet from "helmet";
-import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { env } from "./config/env";
+import { applyCors, handlePreflight } from "./middleware/cors.middleware";
 import { errorHandler, notFound } from "./middleware/error.middleware";
 import { logger } from "./utils/logger";
 
@@ -23,26 +23,8 @@ import adminRoutes        from "./routes/admin.routes";
 const app = express();
 
 // ─── CORS (must be before helmet and all routes) ────────────────────────────
-const allowedOrigins = env.CLIENT_ORIGIN
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
-
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (Postman, curl, server-to-server)
-    if (!origin) return callback(null, true);
-    // Allow wildcard
-    if (allowedOrigins.includes("*")) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error(`CORS: origin '${origin}' not allowed`));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Device-ID"],
-};
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // explicit preflight for all routes
+app.options("*", handlePreflight); // preflight for all routes
+app.use(applyCors);
 
 // ─── Security ───────────────────────────────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: false }));
