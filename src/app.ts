@@ -19,6 +19,9 @@ import notificationRoutes from "./routes/notification.routes";
 import plannerRoutes      from "./routes/planner.routes";
 import subscriptionRoutes from "./routes/subscription.routes";
 import adminRoutes        from "./routes/admin.routes";
+import dailyChallengeRoutes from "./routes/dailyChallenge.routes";
+import flashcardRoutes    from "./routes/flashcard.routes";
+import referralRoutes     from "./routes/referral.routes";
 
 const app = express();
 
@@ -77,7 +80,10 @@ app.use(`${API}/leaderboard`,   leaderboardRoutes);
 app.use(`${API}/notifications`,  notificationRoutes);
 app.use(`${API}/planner`,       plannerRoutes);
 app.use(`${API}/subscriptions`,  subscriptionRoutes);
-app.use(`${API}/admin`,         adminRoutes);
+app.use(`${API}/admin`,          adminRoutes);
+app.use(`${API}/daily-challenge`, dailyChallengeRoutes);
+app.use(`${API}/flashcards`,     flashcardRoutes);
+app.use(`${API}/referrals`,      referralRoutes);
 
 // ─── 404 + Error Handler ──────────────────────────────────────────────────────
 app.use(notFound);
