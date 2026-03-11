@@ -21,6 +21,7 @@ export interface IUser extends Document {
   totalPoints: number;
   refreshToken?: string;
   deviceId?: string;
+  preferredLanguage: "en" | "hi";
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -77,6 +78,7 @@ const userSchema = new Schema<IUser>(
     totalPoints: { type: Number, default: 0 },
     refreshToken: { type: String, select: false },
     deviceId: { type: String, select: false },
+    preferredLanguage: { type: String, enum: ["en", "hi"], default: "en" },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

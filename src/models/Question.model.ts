@@ -15,9 +15,12 @@ export interface IQuestion extends Document {
   year?: number;
   exam?: string;
   questionText: string;
+  questionTextHindi?: string;
   options: IOption[];
+  optionsHindi?: IOption[];
   correctOption: "A" | "B" | "C" | "D";
   explanation: string;
+  explanationHindi?: string;
   isPYQ: boolean;
   tags: string[];
   usageCount: number;
@@ -43,6 +46,12 @@ const questionSchema = new Schema<IQuestion>(
     year: { type: Number, min: 1990, max: new Date().getFullYear() },
     exam: { type: String, trim: true },
     questionText: { type: String, required: true, trim: true },
+    questionTextHindi: { type: String, trim: true },
+    optionsHindi: {
+      type: [{ key: { type: String, enum: ["A", "B", "C", "D"] }, text: { type: String } }],
+      default: undefined,
+    },
+    explanationHindi: { type: String, trim: true },
     options: {
       type: [
         {
